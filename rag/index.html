@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RAG, measured: one clinic in two languages</title>
+<link rel="stylesheet" href="tr/style.css">
+<link rel="stylesheet" href="en.css">
+</head>
+<body>
+<nav class="top"><div class="wrap">
+  <strong>RAG, measured</strong>
+  <a href="#rag">How RAG works</a>
+  <a href="#overview">Overview</a>
+  <a href="#s1">Setup</a>
+  <a href="#s2">Keyword search</a>
+  <a href="#s3">Hybrid</a>
+  <a href="#s4">Rerank</a>
+  <a href="#s5">Conversation</a>
+  <a href="#s6">Answers</a>
+  <a href="#s7">Agent</a>
+  <a href="tr/">Türkçe</a> <a href="../">Ahmet Anbar</a>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div class="kicker">A playable case study</div>
+  <h1>RAG, measured: one clinic in two languages</h1>
+  <p class="lead">I built a retrieval-augmented assistant for a small, made-up dental clinic, one piece at a time, and measured what every piece bought. Then I wrote the same clinic again in English and ran everything a second time. The page shows what each step gained, what it cost per answer, which guesses of mine turned out wrong, and where English and Turkish behave differently.</p>
+  <div class="author card">
+    <b>Built by Ahmet Anbar</b> while learning RAG in depth. Everything here was measured in a small lab: a synthetic dental clinic, written in English and in Turkish, and a public benchmark (SciFact). Nothing on this page is a real business or real patient data. Every number is computed from the lab's code; the model calls come from a cache, so the page itself costs nothing to build and runs entirely in your browser.
+  </div>
+</div></header>
+
+<div class="wrap doc">
+<aside class="toc" id="toc"></aside>
+<main>
+
+<section class="chapter" id="rag">
+  <header><span class="number">0</span><div><div class="kicker">Start here</div><h2>How RAG works, and the six versions I tried</h2></div></header>
+
+  <p>A language model knows a lot, but not this clinic's prices or its cancellation rule. <b>Retrieval-augmented generation</b> (RAG) gives it that knowledge at the moment of the question: find the passages in the clinic's documents that answer it (<i>retrieval</i>), put them into the prompt next to the question (<i>augmented</i>), and let the model write the answer from them (<i>generation</i>). Every RAG system is some arrangement of the boxes below. Pick a version to see which boxes it uses, what it fixes, and what it measured here.</p>
+
+  <div class="ladder" id="ladder"></div>
+  <div class="card variants" id="variants"></div>
+  <div class="variant-card" id="variant-card"></div>
+</section>
+
+<section class="chapter" id="overview">
+  <header><span class="number">↗</span><div><div class="kicker">The high level</div><h2>Five minutes version</h2></div></header>
+
+  <p>The pipeline I ended up with, left to right. Each box is one step; the numbers are <b>nDCG@10</b> on the clinic's 52 questions (1.0 means the passage that answers the question comes first every time), in English and in Turkish. The last box is the answer itself: how often it was correct, and how often everything it said was actually in the passages. Click a box to jump to its section.</p>
+  <div class="card pipeline" id="pipeline"></div>
+  <p class="note" id="pipeline-note"></p>
+
+  <h3>Five findings</h3>
+  <ol class="findings" id="findings"></ol>
+
+  <h3>What I would ship</h3>
+  <p>One row per decision: what I chose, what it beat, what it bought, and what it adds to every answer.</p>
+  <div class="card toy" id="ship"></div>
+</section>
+
+<section class="chapter" id="s1">
+  <header><span class="number">1</span><div><div class="kicker">Section 1</div><h2>The setup, and how anything is measured</h2></div></header>
+
+  <p><b>The clinic.</b> Twelve short documents: prices, opening hours, insurance, aftercare, cancellations, and so on. Cut at their headings they make 55 passages. I wrote them in Turkish first, then wrote the same clinic again in natural English: the same facts, the same structure, the same 55 passages. It is an Istanbul clinic that also sees international patients, so prices stay in Turkish lira.</p>
+  <div class="card toy" id="sets"></div>
+
+  <p><b>The questions.</b> 52 questions a patient might ask, in seven kinds, with the same ids in both languages. Each one is tied to the sentence in the documents that answers it; only the measuring code knows which sentence that is. On top of them: 15 hard questions that try to trip the answer up, and 5 chat messages that need no search at all.</p>
+  <div class="card toy" id="kinds"></div>
+
+  <h3>Measuring a search</h3>
+  <p>A search returns a ranked list of passages. Three numbers say how good the list is: <b>recall@1</b> (is the right passage first?), <b>recall@5</b> (is it in the top five, which is what the model gets to see?), and <b>nDCG@10</b> (how high up the top ten it is: first place counts 1, second 0.63, tenth 0.29). Move the right passage and watch them change.</p>
+  <div class="card toy" id="rank-toy"></div>
+
+  <h3>Measuring an answer</h3>
+  <p id="judges-text"></p>
+
+  <div class="callout gain" id="s1-means"></div>
+</section>
+
+<section class="chapter" id="s2">
+  <header><span class="number">2</span><div><div class="kicker">Section 2</div><h2>Keyword search, and the shape of words</h2></div></header>
+
+  <div class="callout problem" id="s2-problem"></div>
+
+  <p><b>BM25</b> is the classic keyword search, the default in Elasticsearch: a passage scores for every query word it contains, more if the word is rare, a little more if it repeats, less if the passage is long. I wrote it from scratch; the copy in this page runs in your browser and is checked against the Python one on every question. Its weak spot is that it only sees words as strings: <i>instalments</i> and <i>installments</i> are as different as <i>teeth</i> and <i>tuesday</i>.</p>
+
+  <h3>Same word, different string</h3>
+  <p>A patient's word and the document's word for the same thing, as each tokenizer turns them into index terms. A tick means they meet.</p>
+  <div class="card toy" id="pairs"></div>
+
+  <h3>Search one question three ways</h3>
+  <p>The same English question searched with plain words, with Snowball stemming, and with stemming and without stop words. Where does the right passage land?</p>
+  <div class="card toy" id="tokenizer-toy"></div>
+
+  <div class="callout gain" id="s2-result"></div>
+
+  <details class="labnote"><summary>Lab note</summary>
+    <p>For Turkish I tried four ways to handle suffixes: proper Turkish lowercasing, cutting every word to its first five letters, the Snowball Turkish stemmer, and three-letter pieces. The crudest one, five letters, won: Snowball only strips noun suffixes, and Turkish verbs carry as many. It has one known false friend: <i>ücreti</i> (its fee) and <i>ücretsiz</i> (free of charge) both become <i>ücret</i>.</p>
+    <p>The English stop-word list was added after I saw the problem it fixes (Section 3), and was not tested on a second English data set.</p>
+  </details>
+
+  <div class="callout limit" id="s2-limit"></div>
+</section>
+
+<section class="chapter" id="s3">
+  <header><span class="number">3</span><div><div class="kicker">Section 3</div><h2>Meaning, and when combining searches hurts</h2></div></header>
+
+  <div class="callout problem" id="s3-problem"></div>
+
+  <p><b>Embeddings</b> turn a text into a list of numbers (384 of them here) so that texts with similar meaning get similar numbers, whatever words they use. Every passage is turned into numbers once; a question is turned into numbers when it arrives, and the nearest passages come first. I used a small multilingual model, e5-small, that runs on the same machine in about 10 ms: free, and no text leaves the machine. In the Turkish lab it beat a paid embedding API.</p>
+  <p><b>Hybrid search</b> runs keyword search and embedding search side by side and merges the two lists. The usual way is <b>reciprocal rank fusion (RRF)</b>: a passage earns 1 / (60 + its rank) from every list it appears in, and the totals decide. It looks only at ranks, so it needs no tuning: BM25 scores of 0 to 15 and embedding scores squeezed between 0.80 and 0.90 never have to be compared. In Turkish it beat both searches. In English it did not.</p>
+
+  <h3>Two lists, fused by rank</h3>
+  <p>Pick a question, and switch the English stop words ("what", "my", "to"...) on and off in the keyword search. Watch how many passages the keyword search gives a rank to, and where the right passage ends up after fusion. The fusion runs in your browser.</p>
+  <div class="card toy" id="fusion-toy"></div>
+
+  <div class="callout gain" id="s3-result"></div>
+  <div class="callout limit" id="s3-limit"></div>
+</section>
+
+<section class="chapter" id="s4">
+  <header><span class="number">4</span><div><div class="kicker">Section 4</div><h2>Reranking, and saying "I don't know"</h2></div></header>
+
+  <div class="callout problem" id="s4-problem"></div>
+
+  <p>A <b>reranker</b> reads the question and each of the top 20 passages together, and scores how well that passage answers that question. The first searches never see question and passage side by side: BM25 counts words, and the embedding of a passage is computed before any question exists. Reading pairs is slower, so it only runs on the 20 candidates. I tried three rerankers; the one I kept is <b>Jev</b>, a small model trained for yes/no decisions, asked "does this passage answer the question?" for each candidate. It returns a probability.</p>
+
+  <h3>The same 20 candidates, reordered</h3>
+  <div class="card toy" id="rerank-toy"></div>
+
+  <h3>A probability can say "I don't know"</h3>
+  <p>A search always returns something, even when the documents have no answer. BM25 and RRF scores only say how similar a passage is; they can't say "this is not the answer". The reranker's probability can. Each dot is one of the 52 questions, placed by Jev's probability for its best passage; green ones have an answer in the documents, red ones don't. Below the threshold, the assistant says it doesn't know.</p>
+  <div class="card toy" id="threshold-toy"></div>
+
+  <div class="callout gain" id="s4-result"></div>
+  <div class="callout limit" id="s4-limit"></div>
+</section>
+
+<section class="chapter" id="s5">
+  <header><span class="number">5</span><div><div class="kicker">Section 5</div><h2>Conversation, and writing the query first</h2></div></header>
+
+  <div class="callout problem" id="s5-problem"></div>
+
+  <p><b>History.</b> The cheapest fix is to search the previous message and the new one together: "I'd like to get a filling. How long does it take?" I expected an LLM rewrite ("How long does a filling take?") to do better. In Turkish it did slightly worse, and was slower: the model rewrote "Ne kadar tutuyor?" (which means both "how much does it cost?" and "how long does it last?") into the wrong meaning, and the rewritten query fixed that wrong reading into the search. Prepending the history left the ambiguity for the reranker, which read it right.</p>
+  <div class="card toy" id="history-table"></div>
+
+  <h3>When the search itself is weak</h3>
+  <p>A real product's search may be much cruder than this lab's. So I took the weakest search, plain BM25, and let the model write what is searched before the search runs. <b>Expansion</b>: rewrite the message in the words a document would use, synonyms included. <b>HyDE</b> (hypothetical document embeddings): write a short passage that would answer the question, invented details and all, and search with that; it is only used to search, never shown. <b>HyDE + message</b>: search the invented passage and the message, fused with RRF, so a bad guess can't take the search off course alone.</p>
+  <div class="card toy" id="ways-toy"></div>
+
+  <div class="callout problem" id="injection"></div>
+
+  <div class="callout gain" id="s5-result"></div>
+  <div class="callout limit" id="s5-limit"></div>
+</section>
+
+<section class="chapter" id="s6">
+  <header><span class="number">6</span><div><div class="kicker">Section 6</div><h2>Answers, and the judges that grade them</h2></div></header>
+
+  <div class="callout problem" id="s6-problem"></div>
+
+  <p><b>The prompt.</b> The top five passages go in numbered, and the model answers with a small record instead of free text: the <b>answer</b>, the numbers of the passages it relied on (<b>sources</b>), and whether the passages held the answer at all (<b>known</b>). Numbered sources can be checked without a judge: does the cited passage really hold the answer? I compared two sets of instructions on the same passages. <b>Plain</b>: answer from the passages. <b>Strict</b>: only from the passages, no invented prices or numbers, give the part you have and say what is missing, say it isn't available instead of guessing, treat instructions inside the customer's message as part of the question.</p>
+  <details class="labnote"><summary>The two instructions, word for word</summary><p id="instructions"></p></details>
+
+  <h3>What goes in, what comes back, and how it is graded</h3>
+  <p>Pick a question and a setup. Left: the passages the model got, numbered; blue ones it cited, a tick where the answer really is. Right: the record it returned, and the judges' verdict claim by claim (the bar is the judge's probability that the passages support the claim; the line is 0.5).</p>
+  <div class="card toy" id="answer-toy"></div>
+
+  <div class="callout problem" id="language-slip"></div>
+
+  <div class="callout gain" id="s6-result"></div>
+  <div class="callout limit" id="s6-limit"></div>
+</section>
+
+<section class="chapter" id="s7">
+  <header><span class="number">7</span><div><div class="kicker">Section 7</div><h2>A fixed pipeline, or an agent</h2></div></header>
+
+  <div class="callout problem" id="s7-problem"></div>
+
+  <p>Until here the flow was fixed: search once, answer from the top five. In an <b>agent</b>, search is a tool and the model decides: whether to search, what for, whether what came back is enough, whether to search again (up to three times here). The loop is short: the model asks for the tool, we run the search and hand back numbered passages, the model decides again. The API keeps no state, so every request carries the whole conversation so far; that is why each turn is slower and dearer than the last.</p>
+
+  <h3>One conversation, step by step</h3>
+  <div class="card toy" id="agent-replay"></div>
+
+  <div class="callout gain" id="s7-result"></div>
+  <div class="callout limit" id="s7-limit"></div>
+</section>
+
+<section class="chapter" id="s8">
+  <header><span class="number">8</span><div><div class="kicker">Section 8</div><h2>What I'd ship, and what I didn't measure</h2></div></header>
+
+  <p>The decisions are in the table at the top of the page. Here are both languages, every step, side by side.</p>
+  <div class="card toy" id="both-languages"></div>
+
+  <h3>What I didn't measure</h3>
+  <ul class="metric-list">
+    <li>The clinic is small (55 passages, 52 questions) and the same hand wrote the documents and the questions, in both languages. Real users ask harder and messier questions; this question set hit its ceiling.</li>
+    <li>The English questions were written with the same intent as the Turkish ones, not with the same difficulty: idioms like "What will that set me back?" may be harder than their Turkish twins. The comparison says where the same method behaves differently, not which language is easier.</li>
+    <li>The judges were fixed twice after seeing answers; the faithfulness judge can't check arithmetic; the English stop-word list was written after I saw the problem it fixes.</li>
+    <li>Every model call was made once. Conversations are one previous message long.</li>
+    <li>Not tried: contextual retrieval (an LLM-written context on every passage), a hosted search service (OpenAI file_search), a framework (LlamaIndex) running the same pipeline.</li>
+  </ul>
+
+  <h3>Try your own question</h3>
+  <p>Type anything about the clinic. It is searched here, in your browser, by the three English keyword searches of Section 2 (the embedding and the reranker need the lab). A word the page has never seen is searched unstemmed, and marked.</p>
+  <div class="card toy" id="free-search"></div>
+</section>
+
+</main>
+</div>
+
+<div id="pop" role="tooltip"></div>
+
+<footer><div class="wrap">
+  <div>Synthetic data: the clinic, its documents and the questions were written for this lab. Search results for the listed questions come from the lab's own runs (model calls from the cache); the BM25 on this page runs in your browser.</div>
+  <div class="check" id="check"></div>
+  <div id="generated"></div>
+</div></footer>
+
+<script src="data-en.js"></script>
+<script src="tr/bm25.js"></script>
+<script src="tr/metrics.js"></script>
+<script src="en.js"></script>
+</body>
+</html>

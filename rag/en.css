@@ -1,0 +1,56 @@
+.author { padding: 14px 18px; margin-top: 26px; max-width: 70ch; font-size: 15px; line-height: 1.6; color: var(--soft); }
+.author b { color: var(--ink); }
+
+.pipeline { padding: 18px; overflow-x: auto; }
+.pipe { display: flex; align-items: stretch; gap: 4px; min-width: 760px; }
+.pipe-arrow { align-self: center; color: var(--faint); font-size: 12px; }
+.pipe-box { flex: 1 1 0; display: flex; flex-direction: column; gap: 6px; padding: 10px 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); text-decoration: none; min-width: 0; }
+.pipe-box:hover { border-color: var(--jev); box-shadow: 0 0 0 3px color-mix(in srgb, var(--jev) 12%, transparent); }
+.pipe-box b { font-size: 14px; }
+.pipe-box small { font-size: 11.5px; color: var(--soft); line-height: 1.35; }
+.pipe-box.side { border-style: dashed; }
+.pipe-box.answer { border-color: color-mix(in srgb, var(--good) 45%, var(--line)); }
+.pipe-box .scores { display: flex; gap: 6px; font: 600 16px var(--mono); }
+.pipe-box .scores span { display: flex; flex-direction: column; }
+.pipe-box .scores small { font: 600 10px system-ui, sans-serif; letter-spacing: .06em; color: var(--faint); }
+.pipe-box .scores.muted { color: var(--faint); font-size: 15px; }
+
+ol.findings { display: flex; flex-direction: column; gap: 10px; padding-left: 22px; max-width: 78ch; }
+ol.findings li { line-height: 1.6; }
+
+.later-section { opacity: .55; }
+
+.ladder { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 18px 0 10px; }
+.rung { display: flex; flex-direction: column; gap: 4px; text-align: left; padding: 10px 11px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); }
+.rung:hover { border-color: var(--jev); }
+.rung.on { border-color: var(--jev); box-shadow: 0 0 0 3px color-mix(in srgb, var(--jev) 14%, transparent); }
+.rung b { font-size: 14px; line-height: 1.25; }
+.rung small { font-size: 11.5px; color: var(--soft); line-height: 1.3; }
+.rung-id { font: 650 11px var(--mono); color: var(--jev); letter-spacing: .04em; }
+.rung-score { display: flex; gap: 8px; font: 600 16px var(--mono); margin-top: 2px; }
+.rung-score span { display: flex; flex-direction: column; }
+.rung-score small { font: 600 9.5px system-ui, sans-serif; letter-spacing: .06em; color: var(--faint); }
+.variants { padding: 12px 14px; overflow-x: auto; }
+.variants svg { width: 100%; min-width: 820px; height: auto; display: block; }
+.flow-node rect { fill: var(--paper); stroke: var(--line); stroke-width: 1.2; transition: all .35s; }
+.flow-node text { text-anchor: middle; transition: opacity .35s; }
+.flow-node .name { font: 650 12px system-ui, sans-serif; fill: var(--ink); }
+.flow-node .small { font: 10.5px system-ui, sans-serif; fill: var(--soft); }
+.flow-node:not(.on) { opacity: .22; }
+.flow-node.on rect { stroke: var(--ink); stroke-width: 1.6; }
+.flow-node.strict rect { stroke: var(--good); fill: color-mix(in srgb, var(--good) 7%, var(--paper)); }
+.flow-edge { fill: none; stroke: var(--line); stroke-width: 1.2; stroke-dasharray: 3 4; transition: all .35s; }
+.flow-edge.on { stroke: var(--jev); stroke-width: 2.2; stroke-dasharray: none; }
+.flow-edge.loop.on { stroke: var(--history); stroke-dasharray: 6 5; }
+.flow-edge:not(.on) { opacity: .35; }
+.loop-label { font: 600 11px system-ui, sans-serif; fill: var(--history); }
+.zone { font: 650 10px system-ui, sans-serif; letter-spacing: .1em; fill: var(--faint); }
+.variant-detail { padding: 16px 18px; margin-top: 10px; display: flex; flex-direction: column; gap: 12px; }
+.variant-head { display: flex; align-items: baseline; gap: 10px; }
+.variant-head b { font-size: 18px; }
+.variant-head a { margin-left: auto; font-size: 14px; color: var(--jev); text-decoration: none; }
+.variant-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.variant-grid p { margin: 4px 0 0; font-size: 14.5px; line-height: 1.5; }
+.variant-grid .label { font-size: 11px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; color: var(--soft); }
+.variant-grid .measured { font-family: var(--mono); font-size: 13px; }
+@media (max-width: 900px) { .ladder { grid-template-columns: repeat(3, minmax(0, 1fr)); } .variant-grid { grid-template-columns: 1fr 1fr; } }
