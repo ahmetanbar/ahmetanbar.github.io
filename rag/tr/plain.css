@@ -1,0 +1,43 @@
+/* Overrides style.css and en.css, so it must load after them. */
+:root {
+  --bg: #fdfcfa; --paper: #fff; --ink: #1f1f1f; --soft: #5c5c5c; --faint: #8e8e8e;
+  --line: #e4e2dd; --wash: #f3f1ec; --jev: #2b4a9e; --radius: 6px;
+}
+body { font: 17px/1.6 Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif; }
+nav.top, .toc, button, input, select, textarea, table, svg, .card .label, .btn, .tag, .meta { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+
+nav.top { background: var(--bg); backdrop-filter: none; }
+nav.top strong { font-weight: 600; }
+
+header.hero { padding: 56px 0 28px; }
+.kicker { color: var(--soft); font-weight: 400; font-size: 15px; letter-spacing: 0; text-transform: none; }
+h1 { font-size: clamp(30px, 4vw, 40px); line-height: 1.15; letter-spacing: -0.01em; font-weight: 600; max-width: 26ch; }
+h2 { font-size: 26px; letter-spacing: -0.005em; font-weight: 600; }
+.lead { font-size: 18px; color: var(--ink); }
+.meta { gap: 0; color: var(--soft); font-size: 14px; }
+.meta span { background: none; border: 0; padding: 0; border-radius: 0; }
+.meta span + span::before { content: "\00a0\00b7\00a0"; }
+.author.card { background: none; border: 0; border-left: 2px solid var(--line); border-radius: 0; padding: 2px 0 2px 16px; }
+
+.card { border-radius: var(--radius); }
+.tags { gap: 4px 14px; }
+.tag { background: none; border: 0; padding: 0; border-radius: 0; color: var(--faint); font-size: 12.5px; }
+
+.switch, .switch button, .tabs button, .kinds button, .suggest button, .pills button, .chip { border-radius: 6px; }
+.switch button.on, .toc a.on { box-shadow: none; }
+.toc a.on { background: none; font-weight: 600; }
+.toc a.on .num { color: var(--ink); }
+.toc-title { text-transform: none; letter-spacing: 0; font-size: 13px; }
+
+.chart .line { stroke: var(--ink); stroke-width: 3; }
+.stepper .fill { background: var(--ink); }
+.step.on .ball { transform: none; box-shadow: none; }
+.flow .edge { animation: none; }
+.rung.on, .pipe-box:hover, .mini-results li.on, .hit.target, .prompt-passage.cited { box-shadow: none; }
+.chapter .number { display: none; }
+.label, .query .label, .variant-grid .label, .bubble small { text-transform: none; letter-spacing: 0; }
+.toc a .toc-terms { display: none; }
+@media (min-width: 1101px) {
+  nav.top a[href^="#"] { display: none; }
+  nav.top strong { margin-right: auto; }
+}

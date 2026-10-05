@@ -7,11 +7,12 @@ SRC=${1:-$HOME/personal/ai-portfolio/rag-lab/site}
 
 rm -rf rag
 mkdir -p rag/tr
-cp "$SRC"/index.html "$SRC"/style.css "$SRC"/*.js rag/tr/
+cp "$SRC"/index.html "$SRC"/style.css "$SRC"/plain.css "$SRC"/*.js rag/tr/
 cp "$SRC"/en/index.html "$SRC"/en/en.css "$SRC"/en/en.js "$SRC"/en/data-en.js rag/
 
 sed -i '' \
   -e 's#"\.\./style\.css"#"tr/style.css"#' \
+  -e 's#"\.\./plain\.css"#"tr/plain.css"#' \
   -e 's#"\.\./bm25\.js"#"tr/bm25.js"#' \
   -e 's#"\.\./metrics\.js"#"tr/metrics.js"#' \
   -e 's#<a href="\.\./index\.html">Türkçe</a>#<a href="tr/">Türkçe</a> <a href="../">Ahmet Anbar</a>#' \
