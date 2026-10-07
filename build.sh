@@ -25,4 +25,5 @@ sed -i '' \
 
 grep -q 'href="tr/style.css"' rag/index.html
 grep -q 'href="../../"' rag/tr/index.html
+./analytics.sh
 echo "rag/ ready: $(du -sh rag | cut -f1)"
